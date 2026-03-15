@@ -1,10 +1,12 @@
 package services
 
 import (
+	"hash/adler32"
 	"log/slog"
 
 	"github.com/rawndawn/customer-notification/internal/models"
 	"github.com/rawndawn/customer-notification/internal/repositories"
+	"github.com/rawndawn/customer-notification/internal/workers"
 )
 
 type CustomerService struct {
@@ -27,4 +29,46 @@ func (s *CustomerService) PaginateCustomer(page, pageSize int) ([]models.Custome
 	}
 
 	return customers, nil
+}
+
+// Method to send monthly promotional email
+// This iterate in customer pagination to send the workers
+func (s *CustomerService) ProcessMontlyPromotionalEmail() {
+
+	// Handling pagination
+	var pageSize int = 100
+
+	// Iterate in all customers
+	customerCount, err := s.repository.CountCustomers()
+	totalPages := int((customerCount + int64(pageSize) - 1) / int64(pageSize))
+
+	if err != nil {
+		s.logger.Error("Cannot get customer count in Customer Service", slog.Any("err", err))
+	}
+
+	s.logger.Info("Initializing customer monthly promotional email")
+
+	// Here, it's good send workers per page, because internally we use a 
+	// wait group, so, we don't have memory pressure
+	for page := 1; page <= totalPages; page++ {
+
+		// Get customers using pagination
+		customers, err := s.PaginateCustomer(page, pageSize)
+		if err != nil {
+			s.logger.Error(
+				"Cannot iterate to send promotional email in Customer Service",
+				slog.Any("err", err),
+			)
+		}
+
+		// Send workers
+		workers.StartPromotionalEmailWorkerPool(
+			5,
+			customers,
+			func(c models.Customer) {
+				s.logger.Info("Email logic here")
+			},
+		)
+
+	}
 }
