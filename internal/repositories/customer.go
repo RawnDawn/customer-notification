@@ -28,4 +28,13 @@ func (r *CustomerRepository) PaginateCustomers(page, pageSize int) ([]models.Cus
 	return customers, err
 }
 
-// TODO - Define the create customer function
+// Get total count of customers records
+func (r *CustomerRepository) CountCustomers() (int64, error) {
+	var count int64
+
+	err := r.DB.Model(&models.Customer{}).
+		Count(&count).
+		Error
+
+	return count, err
+}
