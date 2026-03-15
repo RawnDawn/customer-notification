@@ -3,6 +3,7 @@ package services
 import (
 	"log/slog"
 
+	"github.com/rawndawn/customer-notification/internal/email"
 	"github.com/rawndawn/customer-notification/internal/models"
 	"github.com/rawndawn/customer-notification/internal/repositories"
 	"github.com/rawndawn/customer-notification/internal/workers"
@@ -11,11 +12,17 @@ import (
 type CustomerService struct {
 	repository *repositories.CustomerRepository
 	logger     *slog.Logger
+	mailer     *email.PromotionalSender
 }
 
-func NewCustomerService(repository *repositories.CustomerRepository) *CustomerService {
+func NewCustomerService(
+	repository *repositories.CustomerRepository,
+	logger *slog.Logger,
+) *CustomerService {
 	return &CustomerService{
 		repository: repository,
+		logger:     logger,
+		mailer:     email.NewPromotionalSender(),
 	}
 }
 
@@ -47,7 +54,7 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 
 	s.logger.Info("Initializing customer monthly promotional email")
 
-	// Here, it's good send workers per page, because internally we use a 
+	// Here, it's good send workers per page, because internally we use a
 	// wait group, so, we don't have memory pressure
 	for page := 1; page <= totalPages; page++ {
 
