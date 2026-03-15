@@ -1,3 +1,3 @@
-# User notificaiton
+# Customer notification
 
 Small project that use Go to send massive emails using routies
