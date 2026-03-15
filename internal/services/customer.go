@@ -1,7 +1,6 @@
 package services
 
 import (
-	"hash/adler32"
 	"log/slog"
 
 	"github.com/rawndawn/customer-notification/internal/models"
