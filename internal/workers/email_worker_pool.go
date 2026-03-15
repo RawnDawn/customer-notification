@@ -21,7 +21,7 @@ func StartPromotionalEmailWorkerPool(
 	for i := 0; i < totalWorkers; i ++ { 
 		wg.Add(1)
 
-		go sendEmail(&wg, jobs)
+		go sendWorker(&wg, jobs, job)
 	}
 
 	// Send jobs
@@ -34,11 +34,12 @@ func StartPromotionalEmailWorkerPool(
 	wg.Wait()
 }
 
-func sendEmail(wg *sync.WaitGroup, jobs chan models.Customer) {
+func sendWorker(wg *sync.WaitGroup, jobs chan models.Customer, job func(models.Customer)) {
 	defer wg.Done()
 
 	for customer := range jobs { 
 		log.Println("Sending email...", customer.Email)
+		job(customer)
 	}
 
 }
