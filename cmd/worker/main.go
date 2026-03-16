@@ -14,29 +14,27 @@ import (
 func main() {
 	// Lgger instance to pass for DI
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
+
 	logger.Info("Starting promotional email sender")
 
 	// Load env
 	err := godotenv.Load()
-	
-	if err != nil { 
+
+	if err != nil {
 		logger.Error("Cannot read .env")
 		os.Exit(1)
-	} 	
-	
+	}
+
 	// Instance db, repository and all logic for customer promotional email
 	database := database.NewDBConnection(logger)
 	repository := repositories.NewCustomerRepository(database.ConnectMySQL())
 	service := services.NewCustomerService(repository, logger)
-	
+
 	// Scheduler
 	monthlyScheduler := scheduler.NewPromotionalEmailScheduler(
-		22,
-		37,
-		func ()  {
-			service.ProcessMontlyPromotionalEmail()	
-		},
+		12, // hour (24 format)
+		21, // minutes
+		service.ProcessMontlyPromotionalEmail,
 	)
 
 	// Init scheduler
