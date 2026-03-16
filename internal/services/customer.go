@@ -26,7 +26,10 @@ func NewCustomerService(
 
 // Get Customers with pagination
 func (s *CustomerService) PaginateCustomer(page, pageSize int) ([]models.Customer, error) {
-	customers, err := s.repository.PaginateCustomers(page, pageSize)
+	customers, err := s.repository.QueryCustomers(
+		repositories.WithEmailNotNull,
+		repositories.Paginate(page, pageSize),
+	)
 
 	if err != nil {
 		s.logger.Error("Cannot paginate in Customer Service", slog.Any("err", err))
@@ -73,7 +76,7 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 
 // Method to validate if a string is a valid email
 // Returns true when is a valid email
-func (s *CustomerService) IsValidEmail(email string) bool { 
+func (s *CustomerService) IsValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 
 	return err == nil

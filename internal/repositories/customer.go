@@ -15,14 +15,17 @@ func NewCustomerRepository(db *gorm.DB) *CustomerRepository {
 	}
 }
 
-// Get customers using paginate scope
-func (r *CustomerRepository) PaginateCustomers(page, pageSize int) ([]models.Customer, error) {
+// Get customers passing scopes to the query
+func (r *CustomerRepository) QueryCustomers(
+	scopes ...func(*gorm.DB) *gorm.DB,
+) ([]models.Customer, error) {
 	var customers []models.Customer
 
-	err := r.DB.
-		Scopes(Paginate(page, pageSize)).
-		Find(&customers).
-		Error
+	// From the scopes (filters) add to the query
+	query := r.DB.Model(&models.Customer{}).
+		Scopes(scopes...)
+
+	err := query.Find(&customers).Error
 
 	return customers, err
 }
