@@ -1,12 +1,15 @@
 package workers
 
-import "sync"
+import (
+	"errors"
+	"sync"
+)
 
-// Createa  worker pool 
+// Createa  worker pool
 func StartWorkerPool[T any](
 	totalWorkers int,
 	jobs []T,
-	jobFunc func(T),
+	jobFunc func(T) error,
 ) {
 	jobChan := make(chan T)
 
@@ -32,11 +35,17 @@ func StartWorkerPool[T any](
 func worker[T any](
 	wg *sync.WaitGroup,
 	jobChan chan T,
-	jobFunc func(T),
-) {
+	jobFunc func(T) error,
+) error {
 	defer wg.Done()
 
 	for job := range jobChan {
-		jobFunc(job)
+		err := jobFunc(job)
+
+		if err != nil {
+			return errors.New("Worker can't procced")
+		}
 	}
+
+	return nil
 }

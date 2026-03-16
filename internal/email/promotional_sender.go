@@ -1,13 +1,10 @@
 package email
 
 import (
-	"errors"
 	"log"
 	"net/mail"
 	"time"
 )
-
-var ErrInvalidCustomerEmail = errors.New("Invalid customer email")
 
 // Connect to the SMTP to send promotional email
 func SendPromotional(email *mail.Address, name string) error {

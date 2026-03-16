@@ -77,21 +77,24 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 }
 
 // Service method to validate mail and send promotional email to the customer
-func (s *CustomerService) SendPromotionalEmail(customer domain.Customer) {
+func (s *CustomerService) SendPromotionalEmail(customer domain.Customer) error {
 	// A this point, customer must be has email, that's why we only use return
 	if customer.Email == nil {
-		return
+		return domain.ErrInvalidCustomerEmail
 	}
 
 	customerEmail, err := mail.ParseAddress(*customer.Email)
 
 	if err != nil {
-		return
+		return domain.ErrInvalidCustomerEmail
 	}
 
 	err = email.SendPromotional(customerEmail, customer.Firstname)
 
 	if err != nil {
 		s.logger.Error("Cannot send email", slog.Any("err", err))
+		return domain.ErrCannotSendEmail
 	}
+
+	return nil
 }
