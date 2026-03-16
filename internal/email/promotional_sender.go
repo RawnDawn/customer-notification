@@ -3,22 +3,19 @@ package email
 import (
 	"log"
 	"time"
+
+	"github.com/rawndawn/customer-notification/internal/models"
 )
 
-type PromotionalSender struct{}
-
-func NewPromotionalSender() *PromotionalSender {
-	return &PromotionalSender{}
-}
-
 // Connect to the SMTP to send promotional email
-func (f *PromotionalSender) Send(to, subject, body string) error {
+func SendPromotional(customer *models.Customer) error {
+	// TODO - Email validation
 
-	log.Println("Sending email to:", to)
+	log.Println("Sending email to:", customer.Email)
 
 	time.Sleep(200 * time.Millisecond)
 
-	log.Println("Email sent to:", to)
+	log.Println("Email sent to:", customer.Email)
 
 	return nil
 }

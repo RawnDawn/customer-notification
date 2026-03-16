@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	
 	// Lgger instance to pass for DI
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	
@@ -26,14 +25,15 @@ func main() {
 		os.Exit(1)
 	} 	
 	
+	// Instance db, repository and all logic for customer promotional email
 	database := database.NewDBConnection(logger)
 	repository := repositories.NewCustomerRepository(database.ConnectMySQL())
 	service := services.NewCustomerService(repository, logger)
 	
 	// Scheduler
 	monthlyScheduler := scheduler.NewPromotionalEmailScheduler(
-		23,
-		40,
+		22,
+		37,
 		func ()  {
 			service.ProcessMontlyPromotionalEmail()	
 		},

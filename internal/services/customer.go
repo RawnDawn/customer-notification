@@ -3,7 +3,6 @@ package services
 import (
 	"log/slog"
 
-	"github.com/rawndawn/customer-notification/internal/email"
 	"github.com/rawndawn/customer-notification/internal/models"
 	"github.com/rawndawn/customer-notification/internal/repositories"
 	"github.com/rawndawn/customer-notification/internal/workers"
@@ -12,7 +11,6 @@ import (
 type CustomerService struct {
 	repository *repositories.CustomerRepository
 	logger     *slog.Logger
-	mailer     *email.PromotionalSender
 }
 
 func NewCustomerService(
@@ -22,7 +20,6 @@ func NewCustomerService(
 	return &CustomerService{
 		repository: repository,
 		logger:     logger,
-		mailer:     email.NewPromotionalSender(),
 	}
 }
 
@@ -40,7 +37,6 @@ func (s *CustomerService) PaginateCustomer(page, pageSize int) ([]models.Custome
 // Method to send monthly promotional email
 // This iterate in customer pagination to send the workers
 func (s *CustomerService) ProcessMontlyPromotionalEmail() {
-
 	// Handling pagination
 	var pageSize int = 100
 
@@ -57,7 +53,6 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 	// Here, it's good send workers per page, because internally we use a
 	// wait group, so, we don't have memory pressure
 	for page := 1; page <= totalPages; page++ {
-
 		// Get customers using pagination
 		customers, err := s.PaginateCustomer(page, pageSize)
 		if err != nil {
@@ -71,10 +66,6 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 		workers.StartPromotionalEmailWorkerPool(
 			5,
 			customers,
-			func(c models.Customer) {
-				s.logger.Info("Email logic here")
-			},
 		)
-
 	}
 }

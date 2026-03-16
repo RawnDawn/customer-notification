@@ -1,19 +1,19 @@
 package workers
 
 import (
-	"log"
 	"sync"
 
+	"github.com/rawndawn/customer-notification/internal/email"
 	"github.com/rawndawn/customer-notification/internal/models"
 )
 
+// Worker pool to send promotional email to the customers
 func StartPromotionalEmailWorkerPool(
 	totalWorkers int,
 	customers []models.Customer,
-	job func(models.Customer),
 ){
 	// Channel without buffer to block until a worker get ready to recieve another job
-	jobs := make(chan models.Customer)
+	jobs := make(chan *models.Customer)
 	
 	var wg sync.WaitGroup
 
@@ -21,12 +21,12 @@ func StartPromotionalEmailWorkerPool(
 	for i := 0; i < totalWorkers; i ++ { 
 		wg.Add(1)
 
-		go sendWorker(&wg, jobs, job)
+		go worker(&wg, jobs)
 	}
 
 	// Send jobs
-	for _, customer := range customers { 
-		jobs <- customer
+	for index := range customers { 
+		jobs <- &customers[index]
 	}
 
 	close(jobs)
@@ -34,12 +34,10 @@ func StartPromotionalEmailWorkerPool(
 	wg.Wait()
 }
 
-func sendWorker(wg *sync.WaitGroup, jobs chan models.Customer, job func(models.Customer)) {
+func worker(wg *sync.WaitGroup, jobs chan *models.Customer) {
 	defer wg.Done()
 
 	for customer := range jobs { 
-		log.Println("Sending email...", customer.Email)
-		job(customer)
+		email.SendPromotional(customer)
 	}
-
 }
