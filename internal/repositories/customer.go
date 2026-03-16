@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/rawndawn/customer-notification/internal/models"
+	"github.com/rawndawn/customer-notification/internal/domain"
 	"gorm.io/gorm"
 )
 
@@ -18,11 +18,11 @@ func NewCustomerRepository(db *gorm.DB) *CustomerRepository {
 // Get customers passing scopes to the query
 func (r *CustomerRepository) QueryCustomers(
 	scopes ...func(*gorm.DB) *gorm.DB,
-) ([]models.Customer, error) {
-	var customers []models.Customer
+) ([]domain.Customer, error) {
+	var customers []domain.Customer
 
 	// From the scopes (filters) add to the query
-	query := r.DB.Model(&models.Customer{}).
+	query := r.DB.Model(&domain.Customer{}).
 		Scopes(scopes...)
 
 	err := query.Find(&customers).Error
@@ -34,7 +34,7 @@ func (r *CustomerRepository) QueryCustomers(
 func (r *CustomerRepository) CountCustomers() (int64, error) {
 	var count int64
 
-	err := r.DB.Model(&models.Customer{}).
+	err := r.DB.Model(&domain.Customer{}).
 		Count(&count).
 		Error
 
