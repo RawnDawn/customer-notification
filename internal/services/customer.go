@@ -26,7 +26,7 @@ func NewCustomerService(
 }
 
 // Get Customers with pagination
-func (s *CustomerService) PaginateCustomer(page, pageSize int) ([]models.Customer, error) {
+func (s *CustomerService) PaginateCustomerWithEmail(page, pageSize int) ([]models.Customer, error) {
 	// paginate customers with valid email
 	customers, err := s.repository.QueryCustomers(
 		repositories.WithEmailNotNull,
@@ -60,7 +60,7 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 	// wait group, so, we don't have memory pressure
 	for page := 1; page <= totalPages; page++ {
 		// Get customers using pagination
-		customers, err := s.PaginateCustomer(page, pageSize)
+		customers, err := s.PaginateCustomerWithEmail(page, pageSize)
 		if err != nil {
 			s.logger.Error(
 				"Cannot iterate to send promotional email in Customer Service",
@@ -86,17 +86,17 @@ func isValidEmail(email string) bool {
 // Service method to validate mail and send promotional email to the customer
 func (s *CustomerService) SendPromotionalEmail(customer models.Customer) {
 	// A this point, customer must be has email, that's why we only use return
-	if customer.Email == nil { 
+	if customer.Email == nil {
 		return
 	}
 
-	if isValidEmail(*customer.Email) {
+	if !isValidEmail(*customer.Email) {
 		return
 	}
 
 	err := email.SendPromotional(*customer.Email, customer.Firstname)
 
-	if err != nil { 
+	if err != nil {
 		s.logger.Error("Cannot send email", slog.Any("err", err))
 	}
 }
