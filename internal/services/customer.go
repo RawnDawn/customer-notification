@@ -2,6 +2,7 @@ package services
 
 import (
 	"log/slog"
+	"net/mail"
 
 	"github.com/rawndawn/customer-notification/internal/models"
 	"github.com/rawndawn/customer-notification/internal/repositories"
@@ -68,4 +69,12 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 			customers,
 		)
 	}
+}
+
+// Method to validate if a string is a valid email
+// Returns true when is a valid email
+func (s *CustomerService) IsValidEmail(email string) bool { 
+	_, err := mail.ParseAddress(email)
+
+	return err == nil
 }

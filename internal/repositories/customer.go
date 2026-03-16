@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"github.com/rawndawn/customer-notification/internal/models"
-	"github.com/rawndawn/customer-notification/internal/database"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +20,7 @@ func (r *CustomerRepository) PaginateCustomers(page, pageSize int) ([]models.Cus
 	var customers []models.Customer
 
 	err := r.DB.
-		Scopes(database.Paginate(page, pageSize)).
+		Scopes(Paginate(page, pageSize)).
 		Find(&customers).
 		Error
 
