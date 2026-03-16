@@ -1,43 +1,42 @@
 package workers
 
-import (
-	"sync"
+import "sync"
 
-	"github.com/rawndawn/customer-notification/internal/email"
-	"github.com/rawndawn/customer-notification/internal/models"
-)
-
-// Worker pool to send promotional email to the customers
-func StartPromotionalEmailWorkerPool(
+// Createa  worker pool 
+func StartWorkerPool[T any](
 	totalWorkers int,
-	customers []models.Customer,
-){
-	// Channel without buffer to block until a worker get ready to recieve another job
-	jobs := make(chan *models.Customer)
-	
+	jobs []T,
+	jobFunc func(T),
+) {
+	jobChan := make(chan T)
+
 	var wg sync.WaitGroup
 
 	// Create workers
-	for i := 0; i < totalWorkers; i ++ { 
+	for i := 0; i < totalWorkers; i++ {
 		wg.Add(1)
 
-		go worker(&wg, jobs)
+		go worker(&wg, jobChan, jobFunc)
 	}
 
 	// Send jobs
-	for index := range customers { 
-		jobs <- &customers[index]
+	for _, j := range jobs { 
+		jobChan <- j
 	}
 
-	close(jobs)
+	close(jobChan)
 
 	wg.Wait()
 }
 
-func worker(wg *sync.WaitGroup, jobs chan *models.Customer) {
+func worker[T any](
+	wg *sync.WaitGroup,
+	jobChan chan T,
+	jobFunc func(T),
+) {
 	defer wg.Done()
 
-	for customer := range jobs { 
-		email.SendPromotional(customer)
+	for job := range jobChan {
+		jobFunc(job)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/mail"
 
+	"github.com/rawndawn/customer-notification/internal/email"
 	"github.com/rawndawn/customer-notification/internal/models"
 	"github.com/rawndawn/customer-notification/internal/repositories"
 	"github.com/rawndawn/customer-notification/internal/workers"
@@ -26,6 +27,7 @@ func NewCustomerService(
 
 // Get Customers with pagination
 func (s *CustomerService) PaginateCustomer(page, pageSize int) ([]models.Customer, error) {
+	// paginate customers with valid email
 	customers, err := s.repository.QueryCustomers(
 		repositories.WithEmailNotNull,
 		repositories.Paginate(page, pageSize),
@@ -66,18 +68,35 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 			)
 		}
 
-		// Send workers
-		workers.StartPromotionalEmailWorkerPool(
+		workers.StartWorkerPool(
 			5,
 			customers,
+			s.SendPromotionalEmail,
 		)
 	}
 }
 
-// Method to validate if a string is a valid email
-// Returns true when is a valid email
-func (s *CustomerService) IsValidEmail(email string) bool {
+// Validate if an email is valid
+func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 
 	return err == nil
+}
+
+// Service method to validate mail and send promotional email to the customer
+func (s *CustomerService) SendPromotionalEmail(customer models.Customer) {
+	// A this point, customer must be has email, that's why we only use return
+	if customer.Email == nil { 
+		return
+	}
+
+	if isValidEmail(*customer.Email) {
+		return
+	}
+
+	err := email.SendPromotional(*customer.Email, customer.Firstname)
+
+	if err != nil { 
+		s.logger.Error("Cannot send email", slog.Any("err", err))
+	}
 }

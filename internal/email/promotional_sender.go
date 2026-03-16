@@ -1,21 +1,21 @@
 package email
 
 import (
+	"errors"
 	"log"
 	"time"
-
-	"github.com/rawndawn/customer-notification/internal/models"
 )
 
-// Connect to the SMTP to send promotional email
-func SendPromotional(customer *models.Customer) error {
-	// TODO - Email validation
+var ErrInvalidCustomerEmail = errors.New("Invalid customer email")
 
-	log.Println("Sending email to:", customer.Email)
+// Connect to the SMTP to send promotional email
+func SendPromotional(email, name string) error {
+
+	log.Println("Sending email to:", email)
 
 	time.Sleep(200 * time.Millisecond)
 
-	log.Println("Email sent to:", customer.Email)
+	log.Println("Email sent to:", email)
 
 	return nil
 }
