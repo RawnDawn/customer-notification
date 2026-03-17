@@ -32,8 +32,8 @@ func main() {
 
 	// Scheduler
 	monthlyScheduler := scheduler.NewPromotionalEmailScheduler(
-		12, // hour (24 format)
-		21, // minutes
+		23, // hour (24 format)
+		28, // minutes
 		service.ProcessMontlyPromotionalEmail,
 	)
 
