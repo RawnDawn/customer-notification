@@ -1,6 +1,7 @@
 package email
 
 import (
+	"crypto/tls"
 	"errors"
 	"log/slog"
 	"os"
@@ -20,7 +21,7 @@ func NewEmail(
 	to, subject, body string,
 ) *Email {
 	return &Email{
-		From:    os.Getenv("MAILER_EMAIL"),
+		From:    os.Getenv("MAILER_FROM"),
 		To:      to,
 		Subject: subject,
 		Body:    body,
@@ -44,23 +45,27 @@ func (e *Email) Send() error {
 	d := gomail.NewDialer(
 		os.Getenv("MAILER_SERVER"),
 		port,
-		"",
-		"",
+		os.Getenv("MAILER_USERNAME"),
+		os.Getenv("MAILER_PASSWORD"),
 	)
 
-	// ssl, err := strconv.ParseBool(os.Getenv("MAILER_SSL"))
-	// if err != nil {
-	// 	return errors.New("Cannot parse MAILER_SSL into bool")
-	// }
+	// SSL and TLS config
+	ssl, err := strconv.ParseBool(os.Getenv("MAILER_SSL"))
+	if err != nil {
+		return errors.New("Cannot parse MAILER_SSL into bool")
+	}
 
-	// startTLS, err := strconv.ParseBool(os.Getenv("MAILER_START_TLS"))
-	// if err != nil {
-	// 	return errors.New("Cannot parse MAILER_START_TLS into bool")
-	// }
+	startTLS, err := strconv.ParseBool(os.Getenv("MAILER_START_TLS"))
+	if err != nil {
+		return errors.New("Cannot parse MAILER_START_TLS into bool")
+	}
 
-	d.SSL = false
-	d.TLSConfig = nil
+	d.SSL = ssl
+	d.TLSConfig = &tls.Config{
+		InsecureSkipVerify: startTLS,
+	}
 
+	// Send email
 	s, err := d.Dial()
 	if err != nil {
 		slog.Error("Cannot connect to mailer", slog.Any("err", err))
