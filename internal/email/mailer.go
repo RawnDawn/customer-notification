@@ -21,7 +21,7 @@ func NewEmail(
 	to, subject, body string,
 ) *Email {
 	return &Email{
-		From:    os.Getenv("MAILER_FROM"),
+		From:    os.Getenv("SMTP_FROM"),
 		To:      to,
 		Subject: subject,
 		Body:    body,
@@ -36,28 +36,28 @@ func (e *Email) Send() error {
 	m.SetBody("text/html", e.Body)
 
 	// Get port
-	port, err := strconv.Atoi(os.Getenv("MAILER_PORT"))
+	port, err := strconv.Atoi(os.Getenv("SMTP_PORT"))
 
 	if err != nil {
-		return errors.New("Cannot parse MAILER_PORT into int")
+		return errors.New("Cannot parse SMTP_PORT into int")
 	}
 
 	d := gomail.NewDialer(
-		os.Getenv("MAILER_SERVER"),
+		os.Getenv("SMTP_SERVER"),
 		port,
-		os.Getenv("MAILER_USERNAME"),
-		os.Getenv("MAILER_PASSWORD"),
+		os.Getenv("SMTP_USERNAME"),
+		os.Getenv("SMTP_PASSWORD"),
 	)
 
 	// SSL and TLS config
-	ssl, err := strconv.ParseBool(os.Getenv("MAILER_SSL"))
+	ssl, err := strconv.ParseBool(os.Getenv("SMTP_SSL"))
 	if err != nil {
-		return errors.New("Cannot parse MAILER_SSL into bool")
+		return errors.New("Cannot parse SMTP_SSL into bool")
 	}
 
-	startTLS, err := strconv.ParseBool(os.Getenv("MAILER_START_TLS"))
+	startTLS, err := strconv.ParseBool(os.Getenv("SMTP_START_TLS"))
 	if err != nil {
-		return errors.New("Cannot parse MAILER_START_TLS into bool")
+		return errors.New("Cannot parse SMTP_START_TLS into bool")
 	}
 
 	d.SSL = ssl
@@ -68,7 +68,7 @@ func (e *Email) Send() error {
 	// Send email
 	s, err := d.Dial()
 	if err != nil {
-		slog.Error("Cannot connect to mailer", slog.Any("err", err))
+		slog.Error("Cannot connect to SMTP", slog.Any("err", err))
 		return err
 	}
 
