@@ -1,23 +1,21 @@
-package services
+package customer
 
 import (
 	"log/slog"
 	"net/mail"
 
-	"github.com/rawndawn/customer-notification/internal/domain"
-	"github.com/rawndawn/customer-notification/internal/email"
-	"github.com/rawndawn/customer-notification/internal/repositories"
-	"github.com/rawndawn/customer-notification/internal/workers"
+	"github.com/rawndawn/customer-notification/internal/notification"
+	"github.com/rawndawn/customer-notification/internal/worker"
 )
 
 type CustomerService struct {
-	repository *repositories.CustomerRepository
+	repository *CustomerRepository
 	logger     *slog.Logger
 }
 
 func NewCustomerService(
-	repository *repositories.CustomerRepository,
-	logger *slog.Logger,
+	repository *CustomerRepository,
+	logger     *slog.Logger,
 ) *CustomerService {
 	return &CustomerService{
 		repository: repository,
@@ -26,11 +24,11 @@ func NewCustomerService(
 }
 
 // Get Customers with pagination
-func (s *CustomerService) PaginateCustomerWithEmail(page, pageSize int) ([]domain.Customer, error) {
+func (s *CustomerService) PaginateCustomerWithEmail(page, pageSize int) ([]Customer, error) {
 	// paginate customers with valid email
 	customers, err := s.repository.QueryCustomers(
-		repositories.WithEmailNotNull,
-		repositories.Paginate(page, pageSize),
+		WithEmailNotNull,
+		Paginate(page, pageSize),
 	)
 
 	if err != nil {
@@ -68,7 +66,7 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 			)
 		}
 
-		workers.StartWorkerPool(
+		worker.StartWorkerPool(
 			5,
 			customers,
 			s.SendPromotionalEmail,
@@ -77,23 +75,23 @@ func (s *CustomerService) ProcessMontlyPromotionalEmail() {
 }
 
 // Service method to validate mail and send promotional email to the customer
-func (s *CustomerService) SendPromotionalEmail(customer domain.Customer) error {
+func (s *CustomerService) SendPromotionalEmail(customer Customer) error {
 	// A this point, customer must be has email, that's why we only use return
 	if customer.Email == nil {
-		return domain.ErrInvalidCustomerEmail
+		return ErrInvalidCustomerEmail
 	}
 
 	customerEmail, err := mail.ParseAddress(*customer.Email)
 
 	if err != nil {
-		return domain.ErrInvalidCustomerEmail
+		return ErrInvalidCustomerEmail
 	}
 
-	err = email.SendPromotional(customerEmail, customer.Firstname)
+	err = notification.SendPromotional(customerEmail, customer.Firstname)
 
 	if err != nil {
 		s.logger.Error("Cannot send email", slog.Any("err", err))
-		return domain.ErrCannotSendEmail
+		return ErrCannotSendEmail
 	}
 
 	return nil

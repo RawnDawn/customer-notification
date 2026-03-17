@@ -6,10 +6,9 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
+	"github.com/rawndawn/customer-notification/internal/customer"
 	"github.com/rawndawn/customer-notification/internal/database"
-	"github.com/rawndawn/customer-notification/internal/repositories"
 	"github.com/rawndawn/customer-notification/internal/scheduler"
-	"github.com/rawndawn/customer-notification/internal/services"
 )
 
 func main() {
@@ -28,8 +27,8 @@ func main() {
 
 	// Instance db, repository and all logic for customer promotional email
 	database := database.NewDBConnection(logger)
-	repository := repositories.NewCustomerRepository(database.ConnectMySQL())
-	service := services.NewCustomerService(repository, logger)
+	repository := customer.NewCustomerRepository(database.ConnectMySQL())
+	service := customer.NewCustomerService(repository, logger)
 
 	// Scheduler
 	hour, err := strconv.Atoi(os.Getenv("SCHEDULER_TIME_HOUR"))

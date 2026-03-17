@@ -1,4 +1,4 @@
-package email
+package notification
 
 import (
 	"crypto/tls"
