@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/rawndawn/customer-notification/internal/database"
@@ -31,9 +32,21 @@ func main() {
 	service := services.NewCustomerService(repository, logger)
 
 	// Scheduler
+	hour, err := strconv.Atoi(os.Getenv("SCHEDULER_TIME_HOUR"))
+	if err != nil {
+		logger.Error("Cannot parse SCHEDULER_TIME_HOUR into int")
+		os.Exit(1)
+	}
+
+	minute, err := strconv.Atoi(os.Getenv("SCHEDULER_TIME_MINUTE"))
+	if err != nil {
+		logger.Error("Cannot parse SCHEDULER_TIME_MINUTE into int")
+		os.Exit(1)
+	}
+
 	monthlyScheduler := scheduler.NewPromotionalEmailScheduler(
-		23, // hour (24 format)
-		28, // minutes
+		hour, // hour (24 format)
+		minute, // minutes
 		service.ProcessMontlyPromotionalEmail,
 	)
 
