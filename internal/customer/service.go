@@ -5,7 +5,7 @@ import (
 	"net/mail"
 
 	"github.com/rawndawn/customer-notification/internal/notification"
-	"github.com/rawndawn/customer-notification/internal/worker"
+	"github.com/rawndawn/customer-notification/internal/infrestructure/worker"
 )
 
 type CustomerService struct {

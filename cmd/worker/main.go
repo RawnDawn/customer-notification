@@ -7,8 +7,8 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/rawndawn/customer-notification/internal/customer"
-	"github.com/rawndawn/customer-notification/internal/database"
-	"github.com/rawndawn/customer-notification/internal/scheduler"
+	"github.com/rawndawn/customer-notification/internal/infrestructure/database"
+	"github.com/rawndawn/customer-notification/internal/infrestructure/scheduler"
 )
 
 func main() {
